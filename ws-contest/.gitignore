@@ -1,0 +1,9 @@
+﻿.vs
+WS.Cobranzas/bin
+WS.Cobranzas/obj
+WS.Infraestructure/bin
+WS.Infraestructure/obj
+WS.Repositories/bin
+WS.Service/bin
+WS.Service/obj
+WS.Repositories/obj
