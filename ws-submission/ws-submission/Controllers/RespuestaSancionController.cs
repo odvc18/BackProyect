@@ -2,7 +2,7 @@
 using WS.Infraestructure.Models.WS.RespuestaSancion;
 using WS.Service.WSServices;
 
-namespace WS.Cobranzas.Controllers
+namespace Controllers
 {
     [ApiController]
     [Route("[controller]")]
