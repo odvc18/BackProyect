@@ -11,8 +11,4 @@
     <ProjectReference Include="..\WS.Infraestructure\WS.Infraestructure.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="ProcesosCoactivosRepository\" />
-  </ItemGroup>
-
 </Project>
