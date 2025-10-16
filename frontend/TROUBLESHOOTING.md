@@ -240,5 +240,3 @@ Error: Store not found
 ---
 
 **💡 Tip**: Siempre usa `npm run dev:simple` si hay problemas con la configuración principal.
-
-

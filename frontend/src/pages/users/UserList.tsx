@@ -22,5 +22,3 @@ const UserList: React.FC = () => {
 }
 
 export default UserList
-
-

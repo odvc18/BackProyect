@@ -68,5 +68,3 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
 }
 
 export default AuthLayout
-
-

@@ -124,5 +124,3 @@ export const {
 } = evaluationSlice.actions
 
 export default evaluationSlice.reducer
-
-
