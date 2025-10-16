@@ -1,19 +1,19 @@
 import React from 'react'
 import { Box, Typography, Card, CardContent } from '@mui/material'
 
-const UserList: React.FC = () => {
+const EvaluationDetail: React.FC = () => {
   return (
     <Box>
       <Typography variant="h4" component="h1" gutterBottom>
-        Usuarios
+        Detalle de Evaluación
       </Typography>
       <Card>
         <CardContent>
           <Typography variant="h6" gutterBottom>
-            Gestión de Usuarios
+            Formulario de Evaluación
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Esta página permitirá a los administradores gestionar usuarios del sistema.
+            Esta página permitirá a los jueces evaluar submissions específicas.
           </Typography>
         </CardContent>
       </Card>
@@ -21,6 +21,4 @@ const UserList: React.FC = () => {
   )
 }
 
-export default UserList
-
-
+export default EvaluationDetail

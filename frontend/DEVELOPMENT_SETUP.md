@@ -147,3 +147,5 @@ Asegúrate de que estos archivos existan:
    ```bash
    npm run dev -- --debug
    ```
+
+

@@ -1,0 +1,602 @@
+DOCUMENTO TÉCNICO - DEFINICIÓN DE LA ARQUITECTURA
+Sistema BackProyect - Arquitectura de Microservicios
+
+================================================================================
+1. MODELO DE DOMINIO
+================================================================================
+
+1.1 Descripción de las Entidades Principales
+
+El sistema BackProyect implementa un modelo de dominio centrado en la gestión de concursos académicos con las siguientes entidades clave:
+
+ENTIDADES PRINCIPALES:
+- User (Usuario): Entidad raíz para gestión de identidad y autenticación
+- Contest (Concurso): Agregado principal que gestiona concursos académicos
+- Category (Categoría): Entidad que define categorías dentro de un concurso
+- Submission (Entrega): Agregado que maneja las entregas de participantes
+- Evaluation (Evaluación): Entidad que almacena resultados de evaluaciones
+- AIAnalysis (Análisis IA): Entidad para resultados de análisis automatizado
+
+1.2 Agregados y Servicios Clave
+
+AGREGADOS:
+- ContestAggregate: Gestiona concursos, categorías y reglas
+- SubmissionAggregate: Maneja entregas, validaciones y archivos
+- UserAggregate: Administra usuarios, roles y autenticación
+- EvaluationAggregate: Procesa evaluaciones y scoring
+
+SERVICIOS DE DOMINIO:
+- ContestService: Lógica de negocio para gestión de concursos
+- SubmissionService: Validación y procesamiento de entregas
+- AuthenticationService: Gestión de autenticación y autorización
+- EvaluationService: Procesamiento de evaluaciones
+- AIAnalysisService: Análisis automatizado con IA
+
+1.3 Diagrama UML del Modelo de Dominio
+
+[DIAGRAMA UML - MODELO DE DOMINIO]
+
+User (1) -----> (0..*) Contest
+User (1) -----> (0..*) Submission
+User (1) -----> (0..*) Evaluation
+
+Contest (1) -----> (1..*) Category
+Contest (1) -----> (0..*) Submission
+
+Submission (1) -----> (0..*) Evaluation
+Submission (1) -----> (0..1) AIAnalysis
+
+Category (1) -----> (0..*) Submission
+
+ATRIBUTOS PRINCIPALES:
+
+User:
+- id: Guid (PK)
+- email: string
+- passwordHash: string
+- role: enum (Admin, Judge, Participant, Viewer)
+- firstName: string
+- lastName: string
+- phone: string
+- institution: string
+- isActive: boolean
+- createdAt: DateTime
+- updatedAt: DateTime
+
+Contest:
+- id: Guid (PK)
+- title: string
+- description: string
+- rules: string
+- status: enum (Draft, Published, Closed, Judging, Completed)
+- startDate: DateTime
+- endDate: DateTime
+- judgingDate: DateTime?
+- maxSubmissionsPerParticipant: int
+- createdByUserId: Guid (FK)
+- createdAt: DateTime
+- updatedAt: DateTime
+
+Category:
+- id: Guid (PK)
+- contestId: Guid (FK)
+- name: string
+- description: string
+- maxSubmissions: int?
+- allowedFileTypes: string
+- maxFileSizeMb: int
+- createdAt: DateTime
+
+================================================================================
+2. CASOS DE USO ARQUITECTÓNICAMENTE SIGNIFICATIVOS
+================================================================================
+
+2.1 Caso de Uso 1: Gestión Completa de Concurso
+
+DESCRIPCIÓN: Un administrador crea un concurso, define categorías, publica el concurso, 
+los participantes envían sus entregas, los jueces evalúan las submissions, y el sistema 
+genera resultados finales con análisis de IA.
+
+ACTORES: Administrador, Participante, Juez, Sistema de IA
+
+FLUJO PRINCIPAL:
+1. Administrador autentica en el sistema (ws-identity)
+2. Crea nuevo concurso con categorías (ws-contest)
+3. Publica el concurso (ws-contest)
+4. Participantes se registran y envían submissions (ws-submission)
+5. Jueces evalúan submissions (ws-evaluation)
+6. Sistema ejecuta análisis con IA (ws-ai_analysis)
+7. Se generan resultados finales y rankings
+
+SERVICIOS INVOLUCRADOS: Todos los microservicios
+COMPLEJIDAD ARQUITECTÓNICA: Alta - Demuestra integración completa del sistema
+
+2.2 Caso de Uso 2: Evaluación Automatizada con IA
+
+DESCRIPCIÓN: El sistema procesa automáticamente submissions utilizando algoritmos de IA 
+para generar evaluaciones preliminares, reduciendo la carga de trabajo de los jueces humanos.
+
+ACTORES: Sistema de IA, Juez, Participante
+
+FLUJO PRINCIPAL:
+1. Participante envía submission (ws-submission)
+2. Sistema valida y almacena submission
+3. Se dispara proceso de análisis automático (ws-ai_analysis)
+4. IA procesa contenido y genera scoring preliminar
+5. Juez revisa y ajusta evaluación automática (ws-evaluation)
+6. Se almacena evaluación final
+
+SERVICIOS INVOLUCRADOS: ws-submission, ws-ai_analysis, ws-evaluation
+COMPLEJIDAD ARQUITECTÓNICA: Media-Alta - Demuestra procesamiento asíncrono y IA
+
+2.3 Caso de Uso 3: Gestión de Identidad y Autorización
+
+DESCRIPCIÓN: Sistema centralizado de autenticación que valida usuarios y gestiona 
+permisos en todos los microservicios, asegurando seguridad y consistencia.
+
+ACTORES: Usuario, Sistema de Autenticación
+
+FLUJO PRINCIPAL:
+1. Usuario intenta acceder a cualquier servicio
+2. Sistema valida token JWT (ws-identity)
+3. Se verifica rol y permisos del usuario
+4. Se autoriza o deniega acceso al recurso solicitado
+5. Se registra actividad de auditoría
+
+SERVICIOS INVOLUCRADOS: ws-identity (principal), todos los demás servicios
+COMPLEJIDAD ARQUITECTÓNICA: Media - Demuestra seguridad distribuida
+
+================================================================================
+3. OBJETIVOS ARQUITECTÓNICOS
+================================================================================
+
+3.1 Objetivos Principales
+
+ESCALABILIDAD:
+- Permitir crecimiento horizontal de cada microservicio independientemente
+- Soportar aumento de usuarios concurrentes sin degradación de performance
+- Facilitar adición de nuevos servicios sin afectar existentes
+
+MODULARIDAD:
+- Separación clara de responsabilidades por dominio de negocio
+- Bounded contexts bien definidos para cada microservicio
+- Acoplamiento bajo entre servicios
+
+MANTENIBILIDAD:
+- Código organizado por capas (Controller, Service, Repository)
+- Documentación técnica completa
+- Testing automatizado en cada servicio
+
+3.2 Relación con Estrategia del Negocio
+
+ALINEACIÓN ESTRATÉGICA:
+- Soporte para múltiples tipos de concursos académicos
+- Automatización de procesos de evaluación para reducir costos
+- Plataforma escalable para crecimiento institucional
+- Integración con sistemas de IA para diferenciación competitiva
+
+VALOR DE NEGOCIO:
+- Reducción de tiempo de evaluación mediante IA
+- Mejora en la experiencia del usuario (participantes y jueces)
+- Flexibilidad para adaptarse a diferentes tipos de concursos
+- Escalabilidad para manejar grandes volúmenes de participantes
+
+================================================================================
+4. APLICACIÓN DE PRINCIPIOS ARQUITECTÓNICOS
+================================================================================
+
+4.1 Principios Aplicados
+
+SEPARACIÓN DE RESPONSABILIDADES (SRP):
+- Cada microservicio tiene una responsabilidad específica del dominio
+- ws-identity: Solo gestión de identidad y autenticación
+- ws-contest: Solo gestión de concursos y categorías
+- ws-submission: Solo manejo de entregas y archivos
+- ws-evaluation: Solo procesamiento de evaluaciones
+- ws-ai_analysis: Solo análisis automatizado
+
+PRINCIPIO DE INVERSIÓN DE DEPENDENCIAS (DIP):
+- Servicios dependen de abstracciones (interfaces) no de implementaciones
+- Repositories implementan interfaces definidas en la capa de servicio
+- Inyección de dependencias en todos los servicios
+
+PRINCIPIO ABIERTO/CERRADO (OCP):
+- Sistema abierto para extensión (nuevos microservicios)
+- Cerrado para modificación (cambios internos no afectan otros servicios)
+- APIs versionadas para compatibilidad
+
+4.2 Justificación de Aplicación
+
+MICROSERVICIOS:
+- Justificación: Diferentes dominios de negocio requieren escalabilidad independiente
+- Beneficio: Permite evolución tecnológica por servicio
+- Implementación: Comunicación REST entre servicios
+
+API-FIRST:
+- Justificación: Facilita integración con frontend y futuros clientes
+- Beneficio: Documentación automática y testing de contratos
+- Implementación: OpenAPI/Swagger en cada servicio
+
+DATABASE PER SERVICE:
+- Justificación: Aislamiento de datos y evolución independiente de esquemas
+- Beneficio: Prevención de acoplamiento a nivel de datos
+- Implementación: Base de datos SQL Server por microservicio
+
+================================================================================
+5. DEFINICIÓN DE ATRIBUTOS DE CALIDAD
+================================================================================
+
+5.1 Atributos de Calidad Identificados
+
+RENDIMIENTO (Performance):
+- Tiempo de respuesta < 200ms para operaciones CRUD básicas
+- Tiempo de respuesta < 2s para análisis con IA
+- Soporte para 1000 usuarios concurrentes
+- Estrategias: Cache Redis, optimización de queries, CDN para archivos
+
+ESCALABILIDAD (Scalability):
+- Escalamiento horizontal automático por servicio
+- Balanceador de carga para distribución de tráfico
+- Estrategias: Docker containers, Kubernetes, auto-scaling
+
+DISPONIBILIDAD (Availability):
+- 99.9% de tiempo de actividad (uptime)
+- Tolerancia a fallos de servicios individuales
+- Estrategias: Health checks, circuit breakers, fallback mechanisms
+
+SEGURIDAD (Security):
+- Autenticación JWT con refresh tokens
+- Autorización basada en roles (RBAC)
+- Encriptación de datos sensibles
+- Estrategias: HTTPS, validación de entrada, sanitización
+
+MANTENIBILIDAD (Maintainability):
+- Código modular y bien documentado
+- Testing automatizado (unit, integration, e2e)
+- CI/CD pipeline completo
+- Estrategias: Code reviews, documentación técnica, monitoreo
+
+5.2 Estrategias de Implementación
+
+RENDIMIENTO:
+- Implementación de cache en memoria (Redis)
+- Optimización de consultas SQL con índices
+- Compresión de respuestas HTTP
+- Lazy loading en frontend
+
+ESCALABILIDAD:
+- Containerización con Docker
+- Orquestación con Kubernetes
+- Auto-scaling basado en métricas de CPU/memoria
+- Load balancing con nginx
+
+DISPONIBILIDAD:
+- Health checks en cada servicio
+- Circuit breaker pattern para llamadas entre servicios
+- Retry policies con backoff exponencial
+- Monitoring y alerting con Prometheus/Grafana
+
+SEGURIDAD:
+- JWT tokens con expiración corta
+- HTTPS obligatorio en producción
+- Validación y sanitización de todas las entradas
+- Logging de auditoría para acciones sensibles
+
+MANTENIBILIDAD:
+- Arquitectura por capas consistente
+- Documentación API con Swagger
+- Testing automatizado en pipeline CI/CD
+- Code coverage mínimo del 80%
+
+================================================================================
+6. SELECCIÓN DE TECNOLOGÍAS
+================================================================================
+
+6.1 Stack Tecnológico Seleccionado
+
+BACKEND:
+- Lenguaje: C# (.NET 8)
+- Framework: ASP.NET Core Web API
+- ORM: Entity Framework Core
+- Base de Datos: SQL Server
+- Justificación: Ecosistema maduro, excelente performance, herramientas de desarrollo robustas
+
+FRONTEND:
+- Framework: React 18 con TypeScript
+- Build Tool: Vite
+- UI Library: Material-UI (MUI)
+- State Management: Redux Toolkit + RTK Query
+- Justificación: Ecosistema rico, excelente DX, componentes reutilizables
+
+INFRAESTRUCTURA:
+- Contenedores: Docker + Docker Compose
+- Orquestación: Kubernetes (producción)
+- CI/CD: GitHub Actions
+- Monitoring: Prometheus + Grafana
+- Justificación: Estándares de la industria, escalabilidad, observabilidad
+
+6.2 Comparación de Alternativas Tecnológicas
+
+BACKEND - C# vs Java vs Node.js:
+C# (.NET): ✅ Excelente performance, ecosistema maduro, herramientas Microsoft
+Java: ✅ Muy estable, gran comunidad, pero más verboso
+Node.js: ❌ Menos tipado, problemas de concurrencia para operaciones CPU-intensivas
+
+FRONTEND - React vs Vue vs Angular:
+React: ✅ Gran ecosistema, flexibilidad, excelente para SPAs
+Vue: ✅ Más simple, pero menor adopción empresarial
+Angular: ✅ Muy completo, pero más complejo para proyectos medianos
+
+BASE DE DATOS - SQL Server vs PostgreSQL vs MongoDB:
+SQL Server: ✅ Integración nativa con .NET, excelente para transacciones
+PostgreSQL: ✅ Open source, muy robusto, pero requiere más configuración
+MongoDB: ❌ No ideal para datos relacionales como usuarios y concursos
+
+6.3 Justificación de Decisiones
+
+DECISIÓN: C# + SQL Server
+- Justificación: Ecosistema integrado, herramientas de desarrollo excelentes
+- Beneficio: Desarrollo más rápido, debugging más fácil
+- Trade-off: Costo de licencias, pero justificado por productividad
+
+DECISIÓN: React + TypeScript
+- Justificación: Tipado fuerte, gran ecosistema, flexibilidad
+- Beneficio: Menos bugs, mejor mantenibilidad, componentes reutilizables
+- Trade-off: Curva de aprendizaje, pero justificado por calidad del código
+
+DECISIÓN: Microservicios
+- Justificación: Escalabilidad independiente, evolución tecnológica
+- Beneficio: Equipos pueden trabajar independientemente
+- Trade-off: Complejidad operacional, pero justificado por escalabilidad
+
+================================================================================
+7. ESTRATEGIAS DE MITIGACIÓN DE PROBLEMAS
+================================================================================
+
+7.1 Riesgos Identificados
+
+RIESGO 1: Falla en Comunicación Entre Microservicios
+- Probabilidad: Media
+- Impacto: Alto
+- Descripción: Si un microservicio falla, puede afectar funcionalidades críticas
+- Estrategias de Mitigación:
+  * Implementar circuit breaker pattern
+  * Configurar timeouts apropiados
+  * Implementar retry policies con backoff exponencial
+  * Health checks y monitoring proactivo
+  * Fallback mechanisms para servicios no críticos
+
+RIESGO 2: Problemas de Consistencia de Datos
+- Probabilidad: Media
+- Impacto: Alto
+- Descripción: Transacciones distribuidas pueden generar inconsistencias
+- Estrategias de Mitigación:
+  * Implementar Saga pattern para transacciones distribuidas
+  * Event sourcing para auditoría y recuperación
+  * Compensating transactions para rollback
+  * Validación de consistencia eventual
+  * Monitoreo de integridad de datos
+
+RIESGO 3: Escalabilidad de Base de Datos
+- Probabilidad: Baja
+- Impacto: Alto
+- Descripción: Crecimiento de datos puede saturar bases de datos individuales
+- Estrategias de Mitigación:
+  * Implementar sharding horizontal
+  * Read replicas para consultas de solo lectura
+  * Cache Redis para datos frecuentemente accedidos
+  * Archiving de datos históricos
+  * Monitoreo de performance de queries
+
+RIESGO 4: Seguridad y Vulnerabilidades
+- Probabilidad: Media
+- Impacto: Crítico
+- Descripción: Ataques o vulnerabilidades pueden comprometer el sistema
+- Estrategias de Mitigación:
+  * Penetration testing regular
+  * Actualizaciones de seguridad automáticas
+  * WAF (Web Application Firewall)
+  * Encriptación end-to-end
+  * Logging y monitoring de seguridad
+
+RIESGO 5: Complejidad Operacional
+- Probabilidad: Alta
+- Impacto: Medio
+- Descripción: Microservicios aumentan complejidad de deployment y monitoreo
+- Estrategias de Mitigación:
+  * Automatización completa con CI/CD
+  * Infrastructure as Code (Terraform)
+  * Monitoring centralizado (Prometheus/Grafana)
+  * Logging centralizado (ELK Stack)
+  * Documentación operacional detallada
+
+7.2 Plan de Contingencia
+
+ESCENARIO 1: Falla Total de un Microservicio
+- Acción Inmediata: Activar circuit breaker, redirigir tráfico
+- Recuperación: Restaurar desde backup, escalar horizontalmente
+- Comunicación: Notificar stakeholders, actualizar status page
+
+ESCENARIO 2: Ataque de Seguridad
+- Acción Inmediata: Aislar servicios afectados, activar WAF
+- Recuperación: Análisis forense, parcheo de vulnerabilidades
+- Comunicación: Notificar autoridades, comunicar a usuarios
+
+ESCENARIO 3: Pico de Tráfico Inesperado
+- Acción Inmediata: Auto-scaling automático, cache warming
+- Recuperación: Análisis de causa raíz, optimización de performance
+- Comunicación: Comunicar degradación de servicio si es necesario
+
+================================================================================
+8. MODELO DE VISTAS DE ARQUITECTURA
+================================================================================
+
+8.1 Vista Lógica
+
+[DIAGRAMA - VISTA LÓGICA]
+
+CAPA DE PRESENTACIÓN:
+- Frontend (React + TypeScript)
+- API Gateway (nginx)
+
+CAPA DE APLICACIÓN:
+- ws-identity (Autenticación)
+- ws-contest (Gestión de Concursos)
+- ws-submission (Gestión de Entregas)
+- ws-evaluation (Evaluaciones)
+- ws-ai_analysis (Análisis IA)
+
+CAPA DE DATOS:
+- identity_db (SQL Server)
+- contest_db (SQL Server)
+- submission_db (SQL Server)
+- evaluation_db (SQL Server)
+- ai_analysis_db (SQL Server)
+
+SERVICIOS EXTERNOS:
+- Redis (Cache)
+- File Storage (Azure Blob/AWS S3)
+
+8.2 Vista de Desarrollo
+
+[DIAGRAMA - VISTA DE DESARROLLO]
+
+ESTRUCTURA POR MICROSERVICIO:
+```
+ws-identity/
+├── Controllers/          # API Controllers
+├── Services/            # Business Logic
+├── Repositories/        # Data Access
+├── Models/             # Domain Models
+├── Infrastructure/     # Database Context
+└── Program.cs          # Startup Configuration
+```
+
+FRONTEND:
+```
+frontend/
+├── src/
+│   ├── components/     # React Components
+│   ├── pages/         # Page Components
+│   ├── store/         # Redux Store
+│   ├── services/      # API Services
+│   ├── types/         # TypeScript Types
+│   └── utils/         # Utilities
+```
+
+8.3 Vista de Proceso
+
+[DIAGRAMA - VISTA DE PROCESO]
+
+FLUJO DE PROCESO PRINCIPAL:
+
+1. USUARIO → FRONTEND
+   - Usuario interactúa con interfaz React
+   - Redux maneja estado de aplicación
+
+2. FRONTEND → API GATEWAY
+   - Requests HTTP a través de nginx
+   - Load balancing y routing
+
+3. API GATEWAY → MICROSERVICIOS
+   - Routing a microservicio específico
+   - Autenticación JWT
+
+4. MICROSERVICIO → BASE DE DATOS
+   - Entity Framework Core
+   - Stored Procedures para operaciones complejas
+
+5. MICROSERVICIO → CACHE
+   - Redis para datos frecuentemente accedidos
+   - Cache invalidation strategies
+
+6. MICROSERVICIO → SERVICIOS EXTERNOS
+   - AI Analysis APIs
+   - File Storage Services
+
+8.4 Vista de Despliegue
+
+[DIAGRAMA - VISTA DE DESPLIEGUE]
+
+ENTORNO DE DESARROLLO:
+- Docker Compose local
+- SQL Server en contenedor
+- Redis en contenedor
+- Hot reload para desarrollo
+
+ENTORNO DE STAGING:
+- Kubernetes cluster
+- Load balancer (nginx)
+- Monitoring (Prometheus/Grafana)
+- CI/CD pipeline (GitHub Actions)
+
+ENTORNO DE PRODUCCIÓN:
+- Kubernetes cluster (múltiples nodos)
+- Auto-scaling horizontal
+- Database clustering
+- CDN para archivos estáticos
+- Backup automatizado
+
+COMPONENTES DE INFRAESTRUCTURA:
+- Load Balancer (nginx)
+- API Gateway
+- Microservices (5 pods)
+- Databases (5 instancias)
+- Cache (Redis cluster)
+- Monitoring Stack
+- Logging Stack (ELK)
+
+8.5 Explicación Detallada de Vistas
+
+VISTA LÓGICA:
+- Muestra la organización conceptual del sistema
+- Separa responsabilidades por capas
+- Define interfaces entre componentes
+- Facilita comprensión del dominio
+
+VISTA DE DESARROLLO:
+- Organiza código por módulos
+- Define estructura de proyectos
+- Facilita trabajo en equipo
+- Permite desarrollo independiente
+
+VISTA DE PROCESO:
+- Muestra flujo de datos y control
+- Identifica puntos de integración
+- Define protocolos de comunicación
+- Facilita debugging y troubleshooting
+
+VISTA DE DESPLIEGUE:
+- Muestra distribución física
+- Define requisitos de infraestructura
+- Facilita planificación de recursos
+- Permite optimización de performance
+
+================================================================================
+CONCLUSIONES
+================================================================================
+
+El sistema BackProyect implementa una arquitectura de microservicios robusta y escalable, 
+diseñada para gestionar concursos académicos con soporte de análisis automatizado mediante IA. 
+La arquitectura propuesta balancea complejidad técnica con beneficios de escalabilidad, 
+mantenibilidad y evolución tecnológica independiente.
+
+Los principios arquitectónicos aplicados, junto con las estrategias de mitigación de riesgos 
+y la selección cuidadosa de tecnologías, proporcionan una base sólida para el desarrollo 
+y operación del sistema en entornos de producción.
+
+La documentación técnica presentada sirve como guía para el desarrollo, deployment y 
+mantenimiento del sistema, asegurando consistencia y calidad en todas las fases del 
+ciclo de vida del software.
+
+================================================================================
+EQUIPO DE DESARROLLO
+================================================================================
+
+Oscar Vanegas - Arquitecto de Software / Backend
+Gina Carolina Paz Romero - QA / Documentación Técnica  
+Edward Santiago Rodriguez - Desarrollador Backend / DevOps
+
+Proyecto Académico - Arquitectura de Software
+© 2025 - Equipo de Arquitectura de Software
+
