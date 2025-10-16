@@ -304,3 +304,4 @@ VITE_APP_VERSION=1.0.0
 
 Proyecto académico - uso educativo.
 © 2025 — Equipo de Arquitectura de Software.
+
