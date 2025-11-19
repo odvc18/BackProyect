@@ -12,8 +12,4 @@
     <ProjectReference Include="..\WS.Repositories\WS.Repositories.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="ProcesosCoactivosServices\" />
-  </ItemGroup>
-
 </Project>
