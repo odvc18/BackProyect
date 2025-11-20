@@ -1,4 +1,4 @@
-# 🎨 Implementación del Frontend - BackProyect
+# 🎨 Implementación del Frontend - EGOSCORE
 
 ## 📋 Estado Actual de la Implementación
 
@@ -252,7 +252,7 @@ Redux Store ← RTK Query Cache ← API Response ← JSON Response
 ```env
 # .env.development
 VITE_API_BASE_URL=http://localhost:3000
-VITE_APP_NAME=BackProyect
+VITE_APP_NAME=EGOSCORE
 VITE_APP_VERSION=1.0.0
 ```
 
@@ -267,5 +267,13 @@ Vite proporciona HMR rápido para desarrollo eficiente con recarga automática d
 **Estado**: ✅ **Fase 1 Completada** - Estructura base, autenticación, dashboard y navegación implementados.
 
 **Próximo**: 🔄 **Fase 2** - Formularios completos y funcionalidades avanzadas.
+
+
+
+
+
+
+
+
 
 

@@ -151,7 +151,7 @@ CREATE TABLE judge_assignments (
 CREATE TABLE scores (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     judge_assignment_id UNIQUEIDENTIFIER NOT NULL,
-    rubric_criterion_id UNIQUEIDENTIFIER NOT NULL, -- Referencia lógica a evaluation_db.rubrics
+    rubric_criterion_id UNIQUEIDENTIFIER NULL, -- Referencia lógica a evaluation_db.rubrics (opcional)
     score DECIMAL(5,2) NOT NULL,
     comments NVARCHAR(MAX),
     scored_at DATETIME2 DEFAULT GETDATE(),

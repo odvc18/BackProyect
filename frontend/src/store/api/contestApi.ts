@@ -12,7 +12,7 @@ import {
 const baseQuery = fetchBaseQuery({
   baseUrl: '/api/contest',
   prepareHeaders: (headers, { getState }) => {
-    const token = (getState() as any).auth.token
+    const token = (getState() as any).auth.token || localStorage.getItem('token')
     if (token) {
       headers.set('authorization', `Bearer ${token}`)
     }
@@ -74,8 +74,8 @@ export const contestApi = createApi({
       providesTags: ['Contest'],
     }),
 
-    // Delete contest (if endpoint exists)
-    deleteContest: builder.mutation<boolean, string>({
+    // Delete contest
+    deleteContest: builder.mutation<{ message: string; success: boolean }, string>({
       query: (id) => ({
         url: '/Delete',
         method: 'DELETE',
@@ -139,5 +139,10 @@ export const {
   useUpdateCategoryMutation,
   useDeleteCategoryMutation,
 } = contestApi
+
+
+
+
+
 
 

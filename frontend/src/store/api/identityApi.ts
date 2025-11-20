@@ -12,7 +12,7 @@ import {
 const baseQuery = fetchBaseQuery({
   baseUrl: '/api/identity',
   prepareHeaders: (headers, { getState }) => {
-    const token = (getState() as any).auth.token
+    const token = (getState() as any).auth.token || localStorage.getItem('token')
     if (token) {
       headers.set('authorization', `Bearer ${token}`)
     }
@@ -116,5 +116,13 @@ export const {
   useGetAllUsersQuery,
   useVerifyTokenQuery,
 } = identityApi
+
+
+
+
+
+
+
+
 
 

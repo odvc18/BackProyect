@@ -1,5 +1,5 @@
 DOCUMENTO TÉCNICO - DEFINICIÓN DE LA ARQUITECTURA
-Sistema BackProyect - Arquitectura de Microservicios
+Sistema EGOSCORE - Arquitectura de Microservicios
 
 ================================================================================
 1. MODELO DE DOMINIO
@@ -7,7 +7,7 @@ Sistema BackProyect - Arquitectura de Microservicios
 
 1.1 Descripción de las Entidades Principales
 
-El sistema BackProyect implementa un modelo de dominio centrado en la gestión de concursos académicos con las siguientes entidades clave:
+El sistema EGOSCORE implementa un modelo de dominio centrado en la gestión de concursos académicos con las siguientes entidades clave:
 
 ENTIDADES PRINCIPALES:
 - User (Usuario): Entidad raíz para gestión de identidad y autenticación
@@ -295,25 +295,66 @@ MANTENIBILIDAD:
 6.1 Stack Tecnológico Seleccionado
 
 BACKEND:
-- Lenguaje: C# (.NET 8)
+- Lenguaje: C# (.NET 8.0)
 - Framework: ASP.NET Core Web API
-- ORM: Entity Framework Core
+- ORM: Entity Framework Core 8.0.16
 - Base de Datos: SQL Server
+- Autenticación: JWT Bearer (Microsoft.AspNetCore.Authentication.JwtBearer 8.0.16)
+- Tokens JWT: System.IdentityModel.Tokens.Jwt 8.14.0
+- Documentación API: Swashbuckle.AspNetCore (Swagger/OpenAPI) 6.6.2
+- Comunicación entre servicios: HttpClient (IHttpClientFactory)
+- Inyección de Dependencias: Built-in ASP.NET Core DI Container
+- CORS: Configurado para permitir comunicación con frontend
 - Justificación: Ecosistema maduro, excelente performance, herramientas de desarrollo robustas
 
 FRONTEND:
-- Framework: React 18 con TypeScript
-- Build Tool: Vite
-- UI Library: Material-UI (MUI)
-- State Management: Redux Toolkit + RTK Query
-- Justificación: Ecosistema rico, excelente DX, componentes reutilizables
+- Framework: React 18.2.0 con TypeScript 5.2.2
+- Build Tool: Vite 5.0.8
+- UI Library: Material-UI (MUI) 5.14.20
+  - @mui/material: Componentes principales
+  - @mui/icons-material: Iconos
+  - @mui/x-data-grid: Tablas de datos avanzadas
+  - @emotion/react y @emotion/styled: Sistema de estilos
+- State Management: 
+  - Redux Toolkit 2.0.1
+  - RTK Query (incluido en Redux Toolkit) para gestión de estado del servidor
+  - React Redux 9.0.4
+- Routing: React Router DOM 6.20.1
+- Formularios: React Hook Form 7.48.2
+- Validación: Yup 1.4.0 + @hookform/resolvers 3.3.2
+- HTTP Client: Axios 1.6.2
+- Visualización de Datos: Recharts 2.8.0
+- Testing:
+  - Vitest 1.0.4
+  - @testing-library/react 14.1.2
+  - @testing-library/jest-dom 6.1.5
+  - @testing-library/user-event 14.5.1
+- Linting: ESLint 8.55.0 con plugins TypeScript
+- TypeScript: Configuración estricta con path aliases
+- Justificación: Ecosistema rico, excelente DX, componentes reutilizables, tipado fuerte
 
-INFRAESTRUCTURA:
-- Contenedores: Docker + Docker Compose
-- Orquestación: Kubernetes (producción)
-- CI/CD: GitHub Actions
-- Monitoring: Prometheus + Grafana
+INFRAESTRUCTURA Y HERRAMIENTAS:
+- Contenedores: Docker + Docker Compose (planeado)
+- Orquestación: Kubernetes (producción - planeado)
+- CI/CD: GitHub Actions (planeado)
+- Monitoring: Prometheus + Grafana (planeado)
+- Versionamiento: Git + GitHub
+- Scripts de Base de Datos: PowerShell (setup-databases.ps1) y SQL
+- Stored Procedures: SQL Server para operaciones complejas
 - Justificación: Estándares de la industria, escalabilidad, observabilidad
+
+ARQUITECTURA DE COMUNICACIÓN:
+- Protocolo: REST API / JSON
+- Autenticación: JWT Tokens con validación en cada servicio
+- CORS: Configurado para desarrollo local (localhost:3000)
+- Proxy: Vite dev server con proxy para comunicación con microservicios
+- Puertos de Microservicios:
+  * ws-identity: 5001
+  * ws-contest: 5002
+  * ws-submission: 5003
+  * ws-evaluation: 5004
+  * ws-ai_analysis: 5005
+- Frontend: Puerto 3000 (Vite dev server)
 
 6.2 Comparación de Alternativas Tecnológicas
 
@@ -348,6 +389,125 @@ DECISIÓN: Microservicios
 - Justificación: Escalabilidad independiente, evolución tecnológica
 - Beneficio: Equipos pueden trabajar independientemente
 - Trade-off: Complejidad operacional, pero justificado por escalabilidad
+
+DECISIÓN: Redux Toolkit + RTK Query
+- Justificación: Simplifica gestión de estado y sincronización con servidor
+- Beneficio: Caché automático, invalidación de datos, menos código boilerplate
+- Trade-off: Curva de aprendizaje inicial, pero reduce complejidad a largo plazo
+
+DECISIÓN: Material-UI (MUI)
+- Justificación: Componentes robustos, diseño consistente, amplia adopción
+- Beneficio: Desarrollo rápido de UI, accesibilidad integrada, temas personalizables
+- Trade-off: Bundle size, pero justificado por productividad y calidad
+
+DECISIÓN: Vite como Build Tool
+- Justificación: Hot Module Replacement extremadamente rápido, build optimizado
+- Beneficio: Desarrollo más ágil, mejor experiencia de desarrollo
+- Trade-off: Requiere configuración adicional vs Create React App, pero beneficios superan costos
+
+6.4 Versiones y Dependencias Específicas
+
+BACKEND (.NET 8.0):
+- Microsoft.NET.Sdk.Web: SDK base para aplicaciones web
+- Microsoft.AspNetCore.Authentication.JwtBearer: 8.0.16
+- Microsoft.EntityFrameworkCore.SqlServer: 8.0.16
+- Swashbuckle.AspNetCore: 6.6.2 (Swagger/OpenAPI)
+- System.IdentityModel.Tokens.Jwt: 8.14.0
+- Nullable reference types: Habilitado
+- Implicit usings: Habilitado
+
+FRONTEND (Node.js/TypeScript):
+- React: 18.2.0
+- React DOM: 18.2.0
+- TypeScript: 5.2.2
+- Vite: 5.0.8
+- Redux Toolkit: 2.0.1
+- React Redux: 9.0.4
+- Material-UI Core: 5.14.20
+- Material-UI Icons: 5.14.19
+- Material-UI Data Grid: 6.18.2
+- React Router DOM: 6.20.1
+- React Hook Form: 7.48.2
+- Yup: 1.4.0
+- Axios: 1.6.2
+- Recharts: 2.8.0
+- Emotion (para MUI): 11.11.1
+
+HERRAMIENTAS DE DESARROLLO:
+- ESLint: 8.55.0
+- TypeScript ESLint: 6.14.0
+- Vitest: 1.0.4
+- Testing Library: 14.1.2
+- jsdom: 23.0.1
+
+6.5 Patrones y Arquitecturas Implementadas
+
+PATRONES DE DISEÑO:
+- Repository Pattern: Implementado en todos los microservicios
+- Service Layer Pattern: Separación de lógica de negocio
+- Dependency Injection: Uso extensivo de DI container de ASP.NET Core
+- API Gateway Pattern: Proxy de Vite en desarrollo, nginx en producción (planeado)
+- Circuit Breaker Pattern: Planeado para producción
+- CQRS (parcial): Separación de lectura/escritura en algunos servicios
+
+ARQUITECTURA DE CAPAS:
+- Capa de Presentación: Controllers (ASP.NET Core)
+- Capa de Aplicación: Services (lógica de negocio)
+- Capa de Infraestructura: Repositories + DbContext (acceso a datos)
+- Capa de Dominio: Models (entidades de dominio)
+
+FRONTEND - ARQUITECTURA:
+- Feature-based structure: Organización por funcionalidad
+- Container/Presentational Components: Separación de lógica y presentación
+- Custom Hooks: Lógica reutilizable
+- RTK Query APIs: Una API por microservicio
+- Redux Slices: Estado local por feature
+
+6.6 Características Técnicas Específicas
+
+BACKEND:
+- Minimal APIs: Uso de Program.cs (top-level statements de C#)
+- Nullable Reference Types: Habilitado para mayor seguridad de tipos
+- Implicit Usings: Reducción de código boilerplate
+- CORS: Configurado para permitir origen del frontend
+- Swagger UI: Documentación interactiva de API en desarrollo
+- JWT Authentication: Validación de tokens en cada endpoint protegido
+- Entity Framework Migrations: Gestión de esquema de base de datos
+- Stored Procedures: Para operaciones complejas y optimización
+- HttpClient Factory: Para comunicación entre microservicios
+
+FRONTEND:
+- Path Aliases: Configuración de alias para imports (@components, @pages, etc.)
+- TypeScript Strict Mode: Habilitado para mayor seguridad de tipos
+- Hot Module Replacement (HMR): Recarga rápida en desarrollo con Vite
+- Code Splitting: Automático con Vite y React Router
+- Tree Shaking: Eliminación de código no utilizado en build
+- Environment Variables: Configuración por entorno (env.development)
+- Proxy Configuration: Desarrollo local con proxy a microservicios
+- ESLint: Linting estricto con reglas TypeScript
+- Vitest: Framework de testing moderno y rápido
+
+HERRAMIENTAS DE DESARROLLO:
+- Visual Studio / Visual Studio Code: IDEs recomendados
+- SQL Server Management Studio: Gestión de bases de datos
+- Postman / Swagger UI: Testing de APIs
+- Git: Control de versiones
+- PowerShell: Scripts de automatización (Windows)
+- npm: Gestor de paquetes para frontend
+
+BASE DE DATOS:
+- SQL Server: Sistema de gestión de base de datos relacional
+- Stored Procedures: Lógica de negocio en base de datos
+- Índices: Optimización de consultas (planeado)
+- Transacciones: Para operaciones atómicas
+- Database per Service: Cada microservicio tiene su propia base de datos
+
+SEGURIDAD:
+- JWT Tokens: Autenticación stateless
+- Password Hashing: Almacenamiento seguro de contraseñas (planeado: bcrypt/Argon2)
+- CORS: Control de acceso cross-origin
+- Input Validation: Validación en backend y frontend
+- SQL Injection Prevention: Entity Framework Core con parameterized queries
 
 ================================================================================
 7. ESTRATEGIAS DE MITIGACIÓN DE PROBLEMAS
@@ -463,25 +623,65 @@ SERVICIOS EXTERNOS:
 
 ESTRUCTURA POR MICROSERVICIO:
 ```
-ws-identity/
-├── Controllers/          # API Controllers
-├── Services/            # Business Logic
-├── Repositories/        # Data Access
-├── Models/             # Domain Models
-├── Infrastructure/     # Database Context
-└── Program.cs          # Startup Configuration
+ws-identity/ (y otros microservicios)
+├── ws-identity/                    # Proyecto principal
+│   ├── Controllers/                # API Controllers (REST endpoints)
+│   ├── Program.cs                 # Startup y configuración
+│   ├── appsettings.json           # Configuración de aplicación
+│   └── ws-identity.csproj         # Archivo de proyecto .NET
+├── WS.Infraestructure/            # Capa de infraestructura compartida
+│   ├── Connection/                # DbContext y configuración de BD
+│   └── Models/                    # Entidades de dominio
+├── WS.Repositories/               # Capa de repositorios
+│   └── [Service]Repositories/     # Repositorios específicos por servicio
+└── WS.Service/                    # Capa de servicios
+    └── [Service]Services/         # Servicios de negocio específicos
 ```
 
 FRONTEND:
 ```
 frontend/
 ├── src/
-│   ├── components/     # React Components
-│   ├── pages/         # Page Components
-│   ├── store/         # Redux Store
-│   ├── services/      # API Services
-│   ├── types/         # TypeScript Types
-│   └── utils/         # Utilities
+│   ├── components/                # Componentes React reutilizables
+│   │   └── layout/               # Componentes de layout (AuthLayout, etc.)
+│   ├── pages/                    # Páginas/Views principales
+│   ├── store/                    # Redux Store y estado global
+│   │   ├── api/                  # RTK Query APIs (una por microservicio)
+│   │   │   ├── identityApi.ts
+│   │   │   ├── contestApi.ts
+│   │   │   ├── submissionApi.ts
+│   │   │   ├── evaluationApi.ts
+│   │   │   └── aiAnalysisApi.ts
+│   │   ├── slices/               # Redux Slices (estado local)
+│   │   │   ├── authSlice.ts
+│   │   │   ├── contestSlice.ts
+│   │   │   ├── submissionSlice.ts
+│   │   │   ├── evaluationSlice.ts
+│   │   │   ├── aiAnalysisSlice.ts
+│   │   │   └── uiSlice.ts
+│   │   ├── hooks.ts              # Custom hooks de Redux
+│   │   └── index.ts              # Store configuration
+│   ├── types/                    # TypeScript type definitions
+│   ├── theme/                    # Tema de Material-UI
+│   ├── App.tsx                   # Componente raíz
+│   ├── main.tsx                  # Entry point
+│   └── index.css                 # Estilos globales
+├── package.json                  # Dependencias y scripts
+├── vite.config.ts               # Configuración de Vite
+├── tsconfig.json                # Configuración de TypeScript
+└── index.html                   # HTML template
+```
+
+SCRIPTS Y HERRAMIENTAS:
+```
+scripts/
+├── SQL Scripts/                 # Scripts de base de datos
+│   ├── create-contest-stored-procedures.sql
+│   ├── add-category-stored-procedures.sql
+│   ├── CRUD_SP.sql
+│   └── [otros scripts SQL]
+└── PowerShell Scripts/          # Scripts de automatización
+    └── setup-databases.ps1
 ```
 
 8.3 Vista de Proceso
@@ -491,60 +691,102 @@ frontend/
 FLUJO DE PROCESO PRINCIPAL:
 
 1. USUARIO → FRONTEND
-   - Usuario interactúa con interfaz React
-   - Redux maneja estado de aplicación
+   - Usuario interactúa con interfaz React (Material-UI)
+   - Redux Toolkit maneja estado de aplicación
+   - RTK Query gestiona estado del servidor y caché
+   - React Hook Form maneja formularios con validación Yup
+   - Vite dev server (puerto 3000) sirve la aplicación
 
-2. FRONTEND → API GATEWAY
-   - Requests HTTP a través de nginx
-   - Load balancing y routing
+2. FRONTEND → API GATEWAY / PROXY
+   - Desarrollo: Vite proxy configuración (vite.config.ts)
+   - Producción: nginx como API Gateway (planeado)
+   - Requests HTTP/HTTPS con Axios o RTK Query
+   - CORS configurado en cada microservicio
 
 3. API GATEWAY → MICROSERVICIOS
-   - Routing a microservicio específico
-   - Autenticación JWT
+   - Routing a microservicio específico según path:
+     * /api/identity → ws-identity:5001
+     * /api/contest → ws-contest:5002
+     * /api/submission → ws-submission:5003
+     * /api/evaluation → ws-evaluation:5004
+     * /api/ai-analysis → ws-ai_analysis:5005
+   - Autenticación JWT Bearer en cada request
+   - Validación de token con System.IdentityModel.Tokens.Jwt
 
 4. MICROSERVICIO → BASE DE DATOS
-   - Entity Framework Core
+   - Entity Framework Core 8.0.16 como ORM
+   - SQL Server como base de datos
+   - DbContext por microservicio (AppDbContext)
    - Stored Procedures para operaciones complejas
+   - Database per service pattern (cada servicio tiene su BD)
 
-5. MICROSERVICIO → CACHE
+5. MICROSERVICIO → CACHE (Planeado)
    - Redis para datos frecuentemente accedidos
    - Cache invalidation strategies
+   - Actualmente: Sin cache implementado (futuro)
 
 6. MICROSERVICIO → SERVICIOS EXTERNOS
-   - AI Analysis APIs
-   - File Storage Services
+   - HttpClient (IHttpClientFactory) para comunicación entre servicios
+   - AI Analysis APIs (integración futura)
+   - File Storage Services (almacenamiento local actualmente)
+
+7. MICROSERVICIO → DOCUMENTACIÓN
+   - Swagger/OpenAPI (Swashbuckle) en cada servicio
+   - Disponible en /swagger en modo desarrollo
 
 8.4 Vista de Despliegue
 
 [DIAGRAMA - VISTA DE DESPLIEGUE]
 
 ENTORNO DE DESARROLLO:
-- Docker Compose local
-- SQL Server en contenedor
-- Redis en contenedor
-- Hot reload para desarrollo
+- Desarrollo local en máquinas de desarrollo
+- SQL Server: Instancia local o contenedor Docker
+- Frontend: Vite dev server (puerto 3000) con HMR
+- Backend: .NET 8.0 ejecutándose directamente (dotnet run)
+- Hot reload: Habilitado para frontend (Vite) y backend (.NET watch)
+- Swagger UI: Disponible en cada microservicio (/swagger)
+- CORS: Configurado para localhost:3000
+- Docker Compose: Planeado para desarrollo local completo
 
-ENTORNO DE STAGING:
+ENTORNO DE STAGING (Planeado):
 - Kubernetes cluster
 - Load balancer (nginx)
 - Monitoring (Prometheus/Grafana)
 - CI/CD pipeline (GitHub Actions)
+- Health checks en cada servicio
+- Logging centralizado
 
-ENTORNO DE PRODUCCIÓN:
+ENTORNO DE PRODUCCIÓN (Planeado):
 - Kubernetes cluster (múltiples nodos)
-- Auto-scaling horizontal
-- Database clustering
-- CDN para archivos estáticos
-- Backup automatizado
+- Auto-scaling horizontal basado en métricas
+- Database clustering para alta disponibilidad
+- CDN para archivos estáticos del frontend
+- Backup automatizado de bases de datos
+- SSL/TLS con certificados válidos
+- WAF (Web Application Firewall) para protección
 
 COMPONENTES DE INFRAESTRUCTURA:
+
+ACTUALES:
+- 5 Microservicios .NET 8.0:
+  * ws-identity (puerto 5001)
+  * ws-contest (puerto 5002)
+  * ws-submission (puerto 5003)
+  * ws-evaluation (puerto 5004)
+  * ws-ai_analysis (puerto 5005)
+- Frontend React (puerto 3000)
+- 5 Bases de datos SQL Server (una por microservicio)
+- Vite dev server con proxy configuration
+
+PLANEADOS:
 - Load Balancer (nginx)
-- API Gateway
-- Microservices (5 pods)
-- Databases (5 instancias)
-- Cache (Redis cluster)
-- Monitoring Stack
-- Logging Stack (ELK)
+- API Gateway (nginx o Ocelot)
+- Cache Layer (Redis cluster)
+- Monitoring Stack (Prometheus + Grafana)
+- Logging Stack (ELK: Elasticsearch, Logstash, Kibana)
+- Container Registry (Docker Hub o Azure Container Registry)
+- CI/CD Pipeline (GitHub Actions)
+- Infrastructure as Code (Terraform o ARM Templates)
 
 8.5 Explicación Detallada de Vistas
 
@@ -576,7 +818,7 @@ VISTA DE DESPLIEGUE:
 CONCLUSIONES
 ================================================================================
 
-El sistema BackProyect implementa una arquitectura de microservicios robusta y escalable, 
+El sistema EGOSCORE implementa una arquitectura de microservicios robusta y escalable, 
 diseñada para gestionar concursos académicos con soporte de análisis automatizado mediante IA. 
 La arquitectura propuesta balancea complejidad técnica con beneficios de escalabilidad, 
 mantenibilidad y evolución tecnológica independiente.
@@ -599,4 +841,5 @@ Edward Santiago Rodriguez - Desarrollador Backend / DevOps
 
 Proyecto Académico - Arquitectura de Software
 © 2025 - Equipo de Arquitectura de Software
+
 

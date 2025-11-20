@@ -11,7 +11,7 @@ import {
 const baseQuery = fetchBaseQuery({
   baseUrl: '/api/ai-analysis',
   prepareHeaders: (headers, { getState }) => {
-    const token = (getState() as any).auth.token
+    const token = (getState() as any).auth.token || localStorage.getItem('token')
     if (token) {
       headers.set('authorization', `Bearer ${token}`)
     }
@@ -216,5 +216,13 @@ export const {
   useGetAnalysisMetricsQuery,
   useGetAnalysisSummaryQuery,
 } = aiAnalysisApi
+
+
+
+
+
+
+
+
 
 

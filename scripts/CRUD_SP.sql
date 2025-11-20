@@ -204,7 +204,7 @@ BEGIN
     END TRY
     BEGIN CATCH
         IF ERROR_NUMBER() = 2627 -- Violation of UNIQUE constraint
-            THROW 51000, 'User already has a submission for this contest category', 1;
+            THROW 51000, 'Ya tienes una submission para esta categoría en este concurso. Solo puedes crear una submission por categoría.', 1;
         ELSE
             THROW;
     END CATCH
@@ -339,7 +339,7 @@ GO
 -- CREATE Score
 CREATE PROCEDURE sp_scores_create
     @judge_assignment_id UNIQUEIDENTIFIER,
-    @rubric_criterion_id UNIQUEIDENTIFIER,
+    @rubric_criterion_id UNIQUEIDENTIFIER = NULL,
     @score DECIMAL(5,2),
     @comments NVARCHAR(MAX) = NULL
 AS
@@ -347,14 +347,23 @@ BEGIN
     SET NOCOUNT ON;
     DECLARE @new_id UNIQUEIDENTIFIER = NEWID();
     
-    INSERT INTO scores (id, judge_assignment_id, rubric_criterion_id, score, comments)
-    VALUES (@new_id, @judge_assignment_id, @rubric_criterion_id, @score, @comments);
-    
-    -- Update judge assignment status
-    UPDATE judge_assignments SET status = 'Completed', completed_at = GETDATE()
-    WHERE id = @judge_assignment_id;
-    
-    SELECT * FROM scores WHERE id = @new_id;
+    BEGIN TRY
+        INSERT INTO scores (id, judge_assignment_id, rubric_criterion_id, score, comments)
+        VALUES (@new_id, @judge_assignment_id, @rubric_criterion_id, @score, @comments);
+        
+        -- Update judge assignment status
+        UPDATE judge_assignments SET status = 'Completed', completed_at = GETDATE()
+        WHERE id = @judge_assignment_id;
+        
+        SELECT * FROM scores WHERE id = @new_id;
+    END TRY
+    BEGIN CATCH
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorSeverity INT = ERROR_SEVERITY();
+        DECLARE @ErrorState INT = ERROR_STATE();
+        
+        RAISERROR(@ErrorMessage, @ErrorSeverity, @ErrorState);
+    END CATCH
 END
 GO
 

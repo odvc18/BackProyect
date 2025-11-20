@@ -21,6 +21,7 @@ import {
   People,
   Settings,
   Logout,
+  BarChart,
 } from '@mui/icons-material'
 import { useAppSelector, useAppDispatch } from '@store/hooks'
 import { logout } from '@store/slices/authSlice'
@@ -56,7 +57,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
       label: 'Submissions',
       path: '/submissions',
       icon: <Upload />,
-      roles: ['Admin', 'Judge', 'Participant'] as UserRole[],
+      roles: ['Admin', 'Participant'] as UserRole[],
     },
     {
       id: 'evaluation',
@@ -71,6 +72,13 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
       path: '/ai-analysis',
       icon: <Psychology />,
       roles: ['Admin', 'Judge'] as UserRole[],
+    },
+    {
+      id: 'scores-panel',
+      label: 'Panel de Calificaciones',
+      path: '/admin/scores',
+      icon: <BarChart />,
+      roles: ['Admin'] as UserRole[],
     },
     {
       id: 'users',
@@ -217,5 +225,12 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
 }
 
 export default Sidebar
+
+
+
+
+
+
+
 
 

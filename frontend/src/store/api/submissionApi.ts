@@ -11,12 +11,45 @@ import {
 const baseQuery = fetchBaseQuery({
   baseUrl: '/api/submission',
   prepareHeaders: (headers, { getState }) => {
-    const token = (getState() as any).auth.token
+    const token = (getState() as any).auth.token || localStorage.getItem('token')
     if (token) {
       headers.set('authorization', `Bearer ${token}`)
     }
-    headers.set('Content-Type', 'application/json')
+    // No establecer Content-Type aquí - se establecerá según el tipo de body
+    // Para FormData, el navegador lo establecerá automáticamente con el boundary
+    // Para JSON, RTK Query lo establecerá automáticamente
     return headers
+  },
+  // Configurar fetchFn para manejar FormData correctamente
+  fetchFn: async (input, init) => {
+    // Si el body es FormData, asegurarse de que no haya Content-Type establecido
+    // El navegador lo establecerá automáticamente con el boundary correcto
+    if (init?.body instanceof FormData) {
+      const headers = new Headers(init.headers)
+      // Eliminar Content-Type si existe para que el navegador lo establezca
+      headers.delete('Content-Type')
+      
+      // Crear un nuevo RequestInit sin Content-Type
+      const newInit: RequestInit = {
+        ...init,
+        headers: headers,
+      }
+      
+      return fetch(input, newInit)
+    }
+    // Para otros tipos de body (JSON), establecer Content-Type si no existe
+    if (init && !(init.body instanceof FormData)) {
+      const headers = new Headers(init.headers)
+      if (!headers.has('Content-Type') && init.body) {
+        headers.set('Content-Type', 'application/json')
+      }
+      return fetch(input, {
+        ...init,
+        headers: headers
+      })
+    }
+    // Para otros tipos de body, usar el comportamiento por defecto
+    return fetch(input, init)
   },
 })
 
@@ -146,9 +179,13 @@ export const submissionApi = createApi({
           url: '/files/Upload',
           method: 'POST',
           body: formData,
+          // No establecer Content-Type aquí - el navegador lo establecerá automáticamente con el boundary
         }
       },
-      invalidatesTags: ['SubmissionFile'],
+      invalidatesTags: (result, error, { submissionId }) => [
+        { type: 'SubmissionFile', id: submissionId },
+        'SubmissionFile',
+      ],
     }),
   }),
 })
@@ -167,5 +204,11 @@ export const {
   useDeleteSubmissionFileMutation,
   useUploadFileMutation,
 } = submissionApi
+
+
+
+
+
+
 
 

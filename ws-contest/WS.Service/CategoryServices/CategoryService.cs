@@ -49,7 +49,7 @@ namespace WS.Service.CategoryServices
             List<Category> categories = new List<Category>();
             try
             {
-                var query = await _repository.GetByContestId("sp_categories_get_by_contest_id", contestId);
+                var query = await _repository.GetByContestId("sp_categories_get_by_contest", contestId);
                 if (query != null && query.Count > 0 && query[0].Rows.Count > 0)
                 {
                     foreach (System.Data.DataRow row in query[0].Rows)
@@ -74,6 +74,51 @@ namespace WS.Service.CategoryServices
                 throw new Exception(ex.Message);
             }
             return categories;
+        }
+
+        public async Task<Category> Update(Category request)
+        {
+            Category category = new Category();
+            try
+            {
+                var query = await _repository.Update("sp_categories_update", request);
+                if (query != null && query.Count > 0 && query[0].Rows.Count > 0)
+                {
+                    var row = query[0].Rows[0];
+                    category.Id = Guid.Parse(row["id"].ToString() ?? Guid.Empty.ToString());
+                    category.ContestId = Guid.Parse(row["contest_id"].ToString() ?? Guid.Empty.ToString());
+                    category.Name = row["name"].ToString() ?? string.Empty;
+                    category.Description = row["description"].ToString() ?? string.Empty;
+                    category.MaxSubmissions = row["max_submissions"] != DBNull.Value ? (int?)Convert.ToInt32(row["max_submissions"]) : null;
+                    category.AllowedFileTypes = row["allowed_file_types"].ToString() ?? string.Empty;
+                    category.MaxFileSizeMb = Convert.ToInt32(row["max_file_size_mb"]);
+                    category.CreatedAt = Convert.ToDateTime(row["created_at"]);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            return category;
+        }
+
+        public async Task<bool> Delete(Guid id)
+        {
+            try
+            {
+                var query = await _repository.Delete("sp_categories_delete", id);
+                if (query != null && query.Count > 0 && query[0].Rows.Count > 0)
+                {
+                    var row = query[0].Rows[0];
+                    var deleted = Convert.ToInt32(row["deleted"]);
+                    return deleted == 1;
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
     }
 }

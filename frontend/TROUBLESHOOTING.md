@@ -1,4 +1,4 @@
-# 🚨 Solución de Problemas - Frontend BackProyect
+# 🚨 Solución de Problemas - Frontend EGOSCORE
 
 ## 🔍 **Diagnóstico de Errores Comunes**
 
@@ -240,5 +240,13 @@ Error: Store not found
 ---
 
 **💡 Tip**: Siempre usa `npm run dev:simple` si hay problemas con la configuración principal.
+
+
+
+
+
+
+
+
 
 

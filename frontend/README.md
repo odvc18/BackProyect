@@ -1,8 +1,8 @@
-# 🎨 Frontend - BackProyect
+# 🎨 Frontend - EGOSCORE
 
 ## 📋 Descripción General
 
-Frontend del sistema BackProyect desarrollado con **React 18 + TypeScript + Vite**. Este frontend se conecta con los 5 microservicios del backend para proporcionar una interfaz de usuario completa para la gestión de concursos académicos.
+Frontend del sistema EGOSCORE desarrollado con **React 18 + TypeScript + Vite**. Este frontend se conecta con los 5 microservicios del backend para proporcionar una interfaz de usuario completa para la gestión de concursos académicos.
 
 ## 🏗️ Arquitectura del Frontend
 
@@ -108,7 +108,7 @@ export default defineConfig({
 ```bash
 # Clonar el repositorio
 git clone <repository-url>
-cd BackProyect/frontend
+cd EGOSCORE/frontend
 
 # Instalar dependencias
 npm install
@@ -253,8 +253,8 @@ npm run build
 ### Variables de Entorno
 ```env
 # .env.production
-VITE_API_BASE_URL=https://api.backproyect.com
-VITE_APP_NAME=BackProyect
+VITE_API_BASE_URL=https://api.egoscore.com
+VITE_APP_NAME=EGOSCORE
 VITE_APP_VERSION=1.0.0
 ```
 

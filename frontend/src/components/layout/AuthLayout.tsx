@@ -43,7 +43,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
                 mb: 1,
               }}
             >
-              BackProyect
+              EGOSCORE
             </Typography>
             <Typography variant="subtitle1" color="text.secondary">
               Sistema de Gestión de Concursos Académicos
@@ -68,5 +68,13 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
 }
 
 export default AuthLayout
+
+
+
+
+
+
+
+
 
 

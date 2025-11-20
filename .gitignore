@@ -3,6 +3,9 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
+ws-submission/ws-submission/uploads/
+
+
 # User-specific files
 *.rsuser
 *.suo

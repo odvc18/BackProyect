@@ -1,7 +1,7 @@
-# BackProyect
+# EGOSCORE
 
 
-BackProyect — Microservices Architecture
+EGOSCORE — Microservices Architecture
 
 
 
@@ -49,7 +49,7 @@ scripts	Contiene utilidades, pipelines o herramientas de despliegue.
 
 📂 Estructura del repositorio
 
-📦 BackProyect/
+📦 EGOSCORE/
 
 &nbsp;┣ 📁 .github/             # Workflows y CI/CD
 
@@ -99,9 +99,9 @@ Clonar el repositorio
 
 
 
-git clone https://github.com/odvc18/BackProyect.git
+git clone https://github.com/odvc18/EGOSCORE.git
 
-cd BackProyect
+cd EGOSCORE
 
 
 

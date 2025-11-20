@@ -1,14 +1,17 @@
 import React from 'react'
 import { useParams } from 'react-router-dom'
-import { Box, Typography, Card, CardContent, Grid, Chip, Button } from '@mui/material'
+import { Box, Typography, Card, CardContent, Grid, Chip, Button, Divider } from '@mui/material'
 import { Edit, ArrowBack } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
-import { useGetContestByIdQuery } from '@store/api/contestApi'
+import { useGetContestByIdQuery, useGetCategoriesByContestQuery } from '@store/api/contestApi'
+import { useAppSelector } from '@store/hooks'
 
 const ContestDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { user } = useAppSelector((state) => state.auth)
   const { data: contest, isLoading, error } = useGetContestByIdQuery(id!)
+  const { data: categories = [], isLoading: categoriesLoading } = useGetCategoriesByContestQuery(id!)
 
   if (isLoading) {
     return (
@@ -42,13 +45,15 @@ const ContestDetail: React.FC = () => {
         <Typography variant="h4" component="h1" sx={{ flexGrow: 1 }}>
           {contest.title}
         </Typography>
-        <Button
-          variant="contained"
-          startIcon={<Edit />}
-          onClick={() => navigate(`/contests/${contest.id}/edit`)}
-        >
-          Editar
-        </Button>
+        {user?.role === 'Admin' && (
+          <Button
+            variant="contained"
+            startIcon={<Edit />}
+            onClick={() => navigate(`/contests/${contest.id}/edit`)}
+          >
+            Editar
+          </Button>
+        )}
       </Box>
 
       {/* Contest Details */}
@@ -128,6 +133,63 @@ const ContestDetail: React.FC = () => {
                   {contest.maxSubmissionsPerParticipant}
                 </Typography>
               </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
+      {/* Categories Section */}
+      <Grid container spacing={3} sx={{ mt: 2 }}>
+        <Grid item xs={12}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Categorías
+              </Typography>
+              {categoriesLoading ? (
+                <Typography variant="body2" color="text.secondary">
+                  Cargando categorías...
+                </Typography>
+              ) : categories.length === 0 ? (
+                <Typography variant="body2" color="text.secondary">
+                  No hay categorías disponibles para este concurso.
+                </Typography>
+              ) : (
+                <Grid container spacing={2} sx={{ mt: 1 }}>
+                  {categories.map((category) => (
+                    <Grid item xs={12} sm={6} md={4} key={category.id}>
+                      <Card variant="outlined">
+                        <CardContent>
+                          <Typography variant="h6" gutterBottom>
+                            {category.name}
+                          </Typography>
+                          {category.description && (
+                            <Typography variant="body2" color="text.secondary" paragraph>
+                              {category.description}
+                            </Typography>
+                          )}
+                          <Divider sx={{ my: 1 }} />
+                          <Box sx={{ mt: 1 }}>
+                            {category.maxSubmissions && (
+                              <Typography variant="caption" display="block" color="text.secondary">
+                                Máx. submissions: {category.maxSubmissions}
+                              </Typography>
+                            )}
+                            {category.allowedFileTypes && (
+                              <Typography variant="caption" display="block" color="text.secondary">
+                                Tipos de archivo: {category.allowedFileTypes}
+                              </Typography>
+                            )}
+                            <Typography variant="caption" display="block" color="text.secondary">
+                              Tamaño máximo: {category.maxFileSizeMb} MB
+                            </Typography>
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  ))}
+                </Grid>
+              )}
             </CardContent>
           </Card>
         </Grid>

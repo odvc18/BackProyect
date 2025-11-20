@@ -140,5 +140,25 @@ namespace WS.Service.ContestServices
             }
             return contest;
         }
+
+        public async Task<bool> Delete(Guid id)
+        {
+            try
+            {
+                var query = await _repository.Delete("sp_contests_delete", id);
+                // El stored procedure retorna una tabla con una columna "deleted" que contiene 1 o 0
+                if (query != null && query.Count > 0 && query[0].Rows.Count > 0)
+                {
+                    var row = query[0].Rows[0];
+                    var deleted = Convert.ToInt32(row["deleted"]);
+                    return deleted == 1;
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
     }
 }

@@ -17,23 +17,28 @@ import SubmissionList from '@pages/submissions/SubmissionList'
 import SubmissionDetail from '@pages/submissions/SubmissionDetail'
 import EvaluationList from '@pages/evaluation/EvaluationList'
 import EvaluationDetail from '@pages/evaluation/EvaluationDetail'
+import ScoresPanel from '@pages/admin/ScoresPanel'
 import UserList from '@pages/users/UserList'
 import UserProfile from '@pages/users/UserProfile'
 
 // Protected Route Component
 import ProtectedRoute from '@components/common/ProtectedRoute'
+import AuthInitializer from '@components/common/AuthInitializer'
 
 const App: React.FC = () => {
-  const { isAuthenticated } = useAppSelector((state) => state.auth)
+  const { isAuthenticated, token, isLoading } = useAppSelector((state) => state.auth)
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <AuthInitializer />
       <Routes>
         {/* Public Routes */}
         <Route
           path="/login"
           element={
-            isAuthenticated ? (
+            // Solo redirigir a dashboard si realmente está autenticado (tiene token y usuario)
+            // No redirigir si solo hay token pero aún se está verificando
+            isAuthenticated && token ? (
               <Navigate to="/dashboard" replace />
             ) : (
               <AuthLayout>
@@ -59,6 +64,7 @@ const App: React.FC = () => {
           {/* Contests */}
           <Route path="contests" element={<ContestList />} />
           <Route path="contests/create" element={<ContestCreate />} />
+          <Route path="contests/:id/edit" element={<ContestCreate />} />
           <Route path="contests/:id" element={<ContestDetail />} />
 
           {/* Submissions */}
@@ -68,6 +74,9 @@ const App: React.FC = () => {
           {/* Evaluation */}
           <Route path="evaluation" element={<EvaluationList />} />
           <Route path="evaluation/:id" element={<EvaluationDetail />} />
+
+          {/* Admin */}
+          <Route path="admin/scores" element={<ScoresPanel />} />
 
           {/* Users */}
           <Route path="users" element={<UserList />} />

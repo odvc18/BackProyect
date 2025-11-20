@@ -1,6 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
 using System.Data;
 using WS.Infraestructure.Connection;
+using WS.Infraestructure.Models;
 using WS.Infraestructure.Models.DTOs;
 
 namespace WS.Repositories.CategoryRepositories
@@ -19,10 +20,10 @@ namespace WS.Repositories.CategoryRepositories
             var parametros = new[]
             {
                 new SqlParameter("@contest_id", request.ContestId),
-                new SqlParameter("@name", request.Description),
-                new SqlParameter("@description", request.Description),
+                new SqlParameter("@name", request.Name),
+                new SqlParameter("@description", request.Description ?? (object)DBNull.Value),
                 new SqlParameter("@max_submissions", request.MaxSubmissions ?? (object)DBNull.Value),
-                new SqlParameter("@allowed_file_types", request.AllowedFileTypes),
+                new SqlParameter("@allowed_file_types", request.AllowedFileTypes ?? (object)DBNull.Value),
                 new SqlParameter("@max_file_size_mb", request.MaxFileSizeMb)
             };
             return await _context.ExecuteStoreProcedureAsync(nombreProcedimiento, parametros);
@@ -33,6 +34,29 @@ namespace WS.Repositories.CategoryRepositories
             var parametros = new[]
             {
                 new SqlParameter("@contest_id", contestId)
+            };
+            return await _context.ExecuteStoreProcedureAsync(nombreProcedimiento, parametros);
+        }
+
+        public async Task<DataTableCollection> Update(string nombreProcedimiento, Category request)
+        {
+            var parametros = new[]
+            {
+                new SqlParameter("@category_id", request.Id),
+                new SqlParameter("@name", request.Name),
+                new SqlParameter("@description", request.Description ?? (object)DBNull.Value),
+                new SqlParameter("@max_submissions", request.MaxSubmissions ?? (object)DBNull.Value),
+                new SqlParameter("@allowed_file_types", request.AllowedFileTypes ?? (object)DBNull.Value),
+                new SqlParameter("@max_file_size_mb", request.MaxFileSizeMb)
+            };
+            return await _context.ExecuteStoreProcedureAsync(nombreProcedimiento, parametros);
+        }
+
+        public async Task<DataTableCollection> Delete(string nombreProcedimiento, Guid id)
+        {
+            var parametros = new[]
+            {
+                new SqlParameter("@category_id", id)
             };
             return await _context.ExecuteStoreProcedureAsync(nombreProcedimiento, parametros);
         }

@@ -16,10 +16,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   fallbackPath = '/login',
 }) => {
   const location = useLocation()
-  const { isAuthenticated, user, isLoading } = useAppSelector((state) => state.auth)
+  const { isAuthenticated, user, isLoading, token } = useAppSelector((state) => state.auth)
 
   // Show loading spinner while checking authentication
-  if (isLoading) {
+  // Si hay token pero aún no se ha verificado (isLoading), esperar
+  // Si no hay token y no está cargando, redirigir inmediatamente
+  if (isLoading || (token && !isAuthenticated && !user)) {
     return (
       <Box
         sx={{
@@ -40,12 +42,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // Redirect to login if not authenticated
-  if (!isAuthenticated || !user) {
+  // Solo redirigir si no hay token o si la verificación falló
+  if (!isAuthenticated || !token) {
     return <Navigate to={fallbackPath} state={{ from: location }} replace />
   }
 
   // Check role-based access
-  if (requiredRole && user.role !== requiredRole) {
+  if (requiredRole && (!user || user.role !== requiredRole)) {
     return (
       <Box
         sx={{
@@ -74,8 +77,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     )
   }
 
-  // Check if user is active
-  if (!user.isActive) {
+  // Check if user is active (solo si hay user cargado)
+  if (user && !user.isActive) {
     return (
       <Box
         sx={{
@@ -102,5 +105,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 }
 
 export default ProtectedRoute
+
+
+
+
 
 

@@ -13,7 +13,7 @@ import {
 const baseQuery = fetchBaseQuery({
   baseUrl: '/api/evaluation',
   prepareHeaders: (headers, { getState }) => {
-    const token = (getState() as any).auth.token
+    const token = (getState() as any).auth.token || localStorage.getItem('token')
     if (token) {
       headers.set('authorization', `Bearer ${token}`)
     }
@@ -188,6 +188,26 @@ export const evaluationApi = createApi({
       invalidatesTags: ['Rubric'],
     }),
 
+    // Get scores by contest
+    getScoresByContest: builder.query<Score[], string>({
+      query: (contestId) => ({
+        url: '/scores/GetByContest',
+        method: 'GET',
+        params: { contestId },
+      }),
+      providesTags: (result, error, contestId) => [{ type: 'Score', id: `contest-${contestId}` }],
+    }),
+
+    // Get scores by category
+    getScoresByCategory: builder.query<Score[], string>({
+      query: (categoryId) => ({
+        url: '/scores/GetByCategory',
+        method: 'GET',
+        params: { categoryId },
+      }),
+      providesTags: (result, error, categoryId) => [{ type: 'Score', id: `category-${categoryId}` }],
+    }),
+
     // Get evaluation summary for a submission
     getEvaluationSummary: builder.query<{
       submissionId: string
@@ -225,6 +245,15 @@ export const {
   useUpdateRubricMutation,
   useDeleteRubricMutation,
   useGetEvaluationSummaryQuery,
+  useGetScoresByContestQuery,
+  useGetScoresByCategoryQuery,
 } = evaluationApi
+
+
+
+
+
+
+
 
 

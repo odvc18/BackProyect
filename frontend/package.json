@@ -1,9 +1,9 @@
 {
-  "name": "backproyect-frontend",
+  "name": "egoscore-frontend",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Frontend para el sistema BackProyect - Gestión de concursos académicos",
+  "description": "Frontend para el sistema EGOSCORE - Gestión de concursos académicos",
   "scripts": {
     "dev": "vite",
     "dev:simple": "vite --config vite.config.simple.ts",
@@ -62,6 +62,6 @@
     "microservices",
     "academic-contests"
   ],
-  "author": "Equipo BackProyect",
+  "author": "Equipo EGOSCORE",
   "license": "MIT"
 }

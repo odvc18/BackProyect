@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Box,
@@ -18,8 +18,8 @@ import {
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
-import { useAppDispatch } from '@store/hooks'
-import { loginStart, loginSuccess, loginFailure } from '@store/slices/authSlice'
+import { useAppDispatch, useAppSelector } from '@store/hooks'
+import { loginStart, loginSuccess, loginFailure, clearError } from '@store/slices/authSlice'
 import { useLoginMutation } from '@store/api/identityApi'
 import { LoginDto } from '@types'
 
@@ -37,6 +37,7 @@ const loginSchema = yup.object({
 const Login: React.FC = () => {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
+  const { error: authError } = useAppSelector((state) => state.auth)
   const [showPassword, setShowPassword] = useState(false)
   const [login, { isLoading }] = useLoginMutation()
 
@@ -52,14 +53,55 @@ const Login: React.FC = () => {
     },
   })
 
+  // Clear error when component mounts or when form changes
+  useEffect(() => {
+    if (authError) {
+      dispatch(clearError())
+    }
+  }, [])
+
   const onSubmit = async (data: LoginDto) => {
     try {
       dispatch(loginStart())
       const response = await login(data).unwrap()
-      dispatch(loginSuccess(response))
+      
+      // Transform response to match AuthResponse format
+      const authResponse = {
+        user: response.user,
+        token: response.token,
+        expiresIn: response.expiresIn,
+      }
+      
+      dispatch(loginSuccess(authResponse))
       navigate('/dashboard')
     } catch (error: any) {
-      const errorMessage = error?.data?.message || 'Error al iniciar sesión'
+      console.error('Login error:', error)
+      
+      // Extract error message from different possible formats
+      let errorMessage = 'Error al iniciar sesión'
+      
+      if (error?.data) {
+        // Try different possible error message formats
+        errorMessage = error.data.message || 
+                       error.data.error || 
+                       error.data.title ||
+                       (typeof error.data === 'string' ? error.data : errorMessage)
+      } else if (error?.error) {
+        errorMessage = error.error.data?.message || 
+                       error.error.message || 
+                       error.error
+      } else if (error?.status === 401) {
+        errorMessage = 'Credenciales incorrectas. Verifica tu email y contraseña.'
+      } else if (error?.status === 400) {
+        errorMessage = 'Datos inválidos. Por favor, verifica la información ingresada.'
+      } else if (error?.status === 404) {
+        errorMessage = 'Usuario no encontrado. Verifica tu email.'
+      } else if (error?.status === 500) {
+        errorMessage = 'Error del servidor. Por favor, intenta más tarde.'
+      } else if (error?.message) {
+        errorMessage = error.message
+      }
+      
       dispatch(loginFailure(errorMessage))
     }
   }
@@ -73,6 +115,17 @@ const Login: React.FC = () => {
       <Typography variant="h4" component="h2" gutterBottom align="center" sx={{ mb: 4 }}>
         Iniciar Sesión
       </Typography>
+
+      {/* Error Alert */}
+      {authError && (
+        <Alert 
+          severity="error" 
+          sx={{ mb: 3 }}
+          onClose={() => dispatch(clearError())}
+        >
+          {authError}
+        </Alert>
+      )}
 
       <Controller
         name="email"

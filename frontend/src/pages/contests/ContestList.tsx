@@ -17,24 +17,29 @@ import {
 import {
   Add,
   Search,
-  FilterList,
   MoreVert,
   Edit,
   Delete,
   Visibility,
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
-import { useGetActiveContestsQuery } from '@store/api/contestApi'
+import { useGetActiveContestsQuery, useDeleteContestMutation } from '@store/api/contestApi'
+import { useAppSelector } from '@store/hooks'
 import { Contest } from '@types'
+import { Alert, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material'
 
 const ContestList: React.FC = () => {
   const navigate = useNavigate()
+  const { user } = useAppSelector((state) => state.auth)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState<string>('all')
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [selectedContest, setSelectedContest] = useState<Contest | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
-  const { data: contests = [], isLoading, error } = useGetActiveContestsQuery()
+  const { data: contests = [], isLoading, error, refetch } = useGetActiveContestsQuery()
+  const [deleteContest, { isLoading: isDeleting }] = useDeleteContestMutation()
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, contest: Contest) => {
     setAnchorEl(event.currentTarget)
@@ -43,27 +48,68 @@ const ContestList: React.FC = () => {
 
   const handleMenuClose = () => {
     setAnchorEl(null)
-    setSelectedContest(null)
+    // No limpiar selectedContest aquí porque podría usarse en el diálogo de eliminación
   }
 
   const handleEdit = () => {
     if (selectedContest) {
       navigate(`/contests/${selectedContest.id}/edit`)
     }
-    handleMenuClose()
+    setAnchorEl(null)
+    setSelectedContest(null)
   }
 
   const handleView = () => {
     if (selectedContest) {
       navigate(`/contests/${selectedContest.id}`)
     }
-    handleMenuClose()
+    setAnchorEl(null)
+    setSelectedContest(null)
   }
 
-  const handleDelete = () => {
-    // TODO: Implement delete functionality
-    console.log('Delete contest:', selectedContest?.id)
-    handleMenuClose()
+  const handleDeleteClick = () => {
+    console.log('Delete clicked, selectedContest:', selectedContest)
+    if (!selectedContest) {
+      console.error('No contest selected for deletion')
+      return
+    }
+    setAnchorEl(null) // Cerrar el menú pero mantener selectedContest
+    setDeleteDialogOpen(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    console.log('Delete confirm clicked, selectedContest:', selectedContest)
+    if (!selectedContest) {
+      console.error('No contest selected for deletion')
+      setDeleteError('No se ha seleccionado un concurso para eliminar')
+      return
+    }
+
+    try {
+      console.log('Attempting to delete contest:', selectedContest.id)
+      setDeleteError(null)
+      const result = await deleteContest(selectedContest.id).unwrap()
+      console.log('Delete successful, result:', result)
+      setDeleteDialogOpen(false)
+      const contestId = selectedContest.id // Guardar el ID antes de limpiar
+      setSelectedContest(null)
+      refetch() // Refrescar la lista
+      console.log('Contest deleted successfully:', contestId)
+    } catch (err: any) {
+      console.error('Error deleting contest:', err)
+      console.error('Error details:', {
+        status: err?.status,
+        data: err?.data,
+        message: err?.message,
+      })
+      setDeleteError(err?.data?.message || err?.message || 'Error al eliminar el concurso')
+    }
+  }
+
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false)
+    setSelectedContest(null)
+    setDeleteError(null)
   }
 
   const getStatusColor = (status: string) => {
@@ -99,11 +145,23 @@ const ContestList: React.FC = () => {
   }
 
   if (error) {
+    console.error('Error loading contests:', error)
     return (
       <Box sx={{ p: 4 }}>
-        <Typography color="error">
-          Error al cargar los concursos. Inténtalo de nuevo.
+        <Typography variant="h6" color="error" gutterBottom>
+          Error al cargar los concursos
         </Typography>
+        <Typography color="text.secondary" sx={{ mb: 2 }}>
+          {error && 'data' in error && typeof error.data === 'object' && error.data !== null && 'message' in error.data
+            ? (error.data as any).message
+            : 'No se pudo conectar con el servidor. Verifica que el servicio ws-contest esté corriendo en el puerto 5002.'}
+        </Typography>
+        <Button
+          variant="outlined"
+          onClick={() => window.location.reload()}
+        >
+          Reintentar
+        </Button>
       </Box>
     )
   }
@@ -115,13 +173,15 @@ const ContestList: React.FC = () => {
         <Typography variant="h4" component="h1">
           Concursos
         </Typography>
-        <Button
-          variant="contained"
-          startIcon={<Add />}
-          onClick={() => navigate('/contests/create')}
-        >
-          Crear Concurso
-        </Button>
+        {user?.role === 'Admin' && (
+          <Button
+            variant="contained"
+            startIcon={<Add />}
+            onClick={() => navigate('/contests/create')}
+          >
+            Crear Concurso
+          </Button>
+        )}
       </Box>
 
       {/* Filters */}
@@ -231,15 +291,50 @@ const ContestList: React.FC = () => {
           <Visibility sx={{ mr: 1 }} />
           Ver Detalles
         </MenuItem>
-        <MenuItem onClick={handleEdit}>
-          <Edit sx={{ mr: 1 }} />
-          Editar
-        </MenuItem>
-        <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
-          <Delete sx={{ mr: 1 }} />
-          Eliminar
-        </MenuItem>
+        {user?.role === 'Admin' && (
+          <MenuItem onClick={handleEdit}>
+            <Edit sx={{ mr: 1 }} />
+            Editar
+          </MenuItem>
+        )}
+        {user?.role === 'Admin' && (
+          <MenuItem onClick={handleDeleteClick} sx={{ color: 'error.main' }}>
+            <Delete sx={{ mr: 1 }} />
+            Eliminar
+          </MenuItem>
+        )}
       </Menu>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleDeleteCancel}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
+      >
+        <DialogTitle id="delete-dialog-title">
+          Confirmar Eliminación
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-dialog-description">
+            ¿Estás seguro de que deseas eliminar el concurso "{selectedContest?.title}"?
+            Esta acción no se puede deshacer y también se eliminarán todas las categorías asociadas.
+          </DialogContentText>
+          {deleteError && (
+            <Alert severity="error" sx={{ mt: 2 }}>
+              {deleteError}
+            </Alert>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteCancel} disabled={isDeleting}>
+            Cancelar
+          </Button>
+          <Button onClick={handleDeleteConfirm} color="error" variant="contained" disabled={isDeleting}>
+            {isDeleting ? 'Eliminando...' : 'Eliminar'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   )
 }

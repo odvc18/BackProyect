@@ -19,10 +19,10 @@ namespace WS.Repositories.UserRepositories
             var parametros = new[]
             {
                 new SqlParameter("@email", request.Email),
-                new SqlParameter("@passwordHash", request.PasswordHash),
+                new SqlParameter("@password_hash", request.PasswordHash),
                 new SqlParameter("@role", request.Role),
-                new SqlParameter("@firstName", request.FirstName ?? (object)DBNull.Value),
-                new SqlParameter("@lastName", request.LastName ?? (object)DBNull.Value),
+                new SqlParameter("@first_name", request.FirstName ?? (object)DBNull.Value),
+                new SqlParameter("@last_name", request.LastName ?? (object)DBNull.Value),
                 new SqlParameter("@phone", request.Phone ?? (object)DBNull.Value),
                 new SqlParameter("@institution", request.Institution ?? (object)DBNull.Value),
             };
@@ -34,7 +34,7 @@ namespace WS.Repositories.UserRepositories
         {
             var parametros = new[]
             {
-                new SqlParameter("@Email", email)
+                new SqlParameter("@email", email)
             };
             return await _context.ExecuteStoreProcedureAsync(nombreProcedimiento, parametros);
         }
@@ -53,8 +53,8 @@ namespace WS.Repositories.UserRepositories
             var parametros = new[]
             {
                 new SqlParameter("@user_id", id),
-                new SqlParameter("@firstName", request.FirstName ?? (object)DBNull.Value),
-                new SqlParameter("@lastName", request.LastName ?? (object)DBNull.Value),
+                new SqlParameter("@first_name", request.FirstName ?? (object)DBNull.Value),
+                new SqlParameter("@last_name", request.LastName ?? (object)DBNull.Value),
                 new SqlParameter("@phone", request.Phone ?? (object)DBNull.Value),
                 new SqlParameter("@institution", request.Institution ?? (object)DBNull.Value),
             };
@@ -69,6 +69,12 @@ namespace WS.Repositories.UserRepositories
                 new SqlParameter("@user_id", id)
             };
             return await _context.ExecuteStoreProcedureAsync(nombreProcedimiento, parametros);
+        }
+
+        public async Task<DataTableCollection> GetAll()
+        {
+            var sql = "SELECT * FROM users WHERE is_active = 1 ORDER BY created_at DESC;";
+            return await _context.ExecuteQueryAsync(sql);
         }
     }
 }

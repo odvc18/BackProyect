@@ -66,10 +66,26 @@ const Header: React.FC = () => {
 
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-      {/* Title */}
-      <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-        BackProyect
-      </Typography>
+      {/* Logo and Title */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexGrow: 1 }}>
+        <Box
+          component="img"
+          src="/logo.png"
+          alt="Logo"
+          onError={(e: any) => {
+            // Si no hay logo, ocultar el elemento
+            e.target.style.display = 'none'
+          }}
+          sx={{
+            height: 40,
+            width: 'auto',
+            display: { xs: 'none', sm: 'block' },
+          }}
+        />
+        <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
+          EGOSCORE
+        </Typography>
+      </Box>
 
       {/* Right side actions */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -179,5 +195,10 @@ const Header: React.FC = () => {
 }
 
 export default Header
+
+
+
+
+
 
 

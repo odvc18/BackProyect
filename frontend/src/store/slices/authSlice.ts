@@ -1,11 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { User, AuthState } from '@types'
 
+// Estado inicial: solo cargar el token, pero no establecer isAuthenticated hasta verificar
 const initialState: AuthState = {
   user: null,
   token: localStorage.getItem('token'),
-  isAuthenticated: !!localStorage.getItem('token'),
-  isLoading: false,
+  isAuthenticated: false, // No establecer como true hasta verificar el token
+  isLoading: !!localStorage.getItem('token'), // Mostrar loading si hay token para verificar
   error: null,
 }
 

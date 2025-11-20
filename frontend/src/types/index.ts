@@ -189,15 +189,15 @@ export interface JudgeAssignmentCreateDto {
 export interface Score {
   id: string
   judgeAssignmentId: string
-  rubricCriterionId: string
-  score: number
+  rubricCriterionId?: string
+  value: number
   comments?: string
-  createdAt: string
+  scoredAt: string
 }
 
 export interface ScoreCreateDto {
   judgeAssignmentId: string
-  rubricCriterionId: string
+  rubricCriterionId?: string
   score: number
   comments?: string
 }
